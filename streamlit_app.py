@@ -10,8 +10,20 @@ from langchain_pinecone import PineconeVectorStore
 from langchain_openai import OpenAI
 from langchain.chains.question_answering import load_qa_chain
 
-# Load environment variables
+# Load environment variables for local development
 load_dotenv()
+
+def get_api_key(key_name):
+    """Get API key from Streamlit secrets (cloud) or environment variables (local)"""
+    # First try Streamlit secrets (for cloud deployment)
+    try:
+        if hasattr(st, 'secrets') and key_name in st.secrets:
+            return st.secrets[key_name]
+    except:
+        pass
+    
+    # Fall back to environment variables (for local development)
+    return os.getenv(key_name)
 
 # Page configuration
 st.set_page_config(
@@ -32,19 +44,26 @@ class RAGSystem:
         """Initialize all RAG components"""
         try:
             # Check for API keys
-            if not os.getenv("OPENAI_API_KEY"):
-                st.error("❌ OpenAI API key not found. Please set OPENAI_API_KEY in your .env file.")
+            openai_key = get_api_key("OPENAI_API_KEY")
+            pinecone_key = get_api_key("PINECONE_API_KEY")
+            
+            if not openai_key:
+                st.error("❌ OpenAI API key not found.")
+                st.info("🔧 **For Streamlit Cloud**: Add OPENAI_API_KEY to your app's secrets in the Streamlit Cloud dashboard")
+                st.info("🏠 **For local development**: Set OPENAI_API_KEY in your .env file")
                 return False
             
-            if not os.getenv("PINECONE_API_KEY"):
-                st.error("❌ Pinecone API key not found. Please set PINECONE_API_KEY in your .env file.")
+            if not pinecone_key:
+                st.error("❌ Pinecone API key not found.")
+                st.info("🔧 **For Streamlit Cloud**: Add PINECONE_API_KEY to your app's secrets in the Streamlit Cloud dashboard")
+                st.info("🏠 **For local development**: Set PINECONE_API_KEY in your .env file")
                 return False
             
             # Initialize embeddings
-            self.embeddings = OpenAIEmbeddings(api_key=os.getenv("OPENAI_API_KEY"))
+            self.embeddings = OpenAIEmbeddings(api_key=openai_key)
             
             # Initialize Pinecone
-            pc = PineconeClient(api_key=os.getenv('PINECONE_API_KEY'))
+            pc = PineconeClient(api_key=pinecone_key)
             
             # Create index if it doesn't exist
             if self.index_name not in pc.list_indexes().names():
@@ -100,7 +119,7 @@ class RAGSystem:
                         documents=chunks,
                         embedding=self.embeddings,
                         index_name=self.index_name,
-                        pinecone_api_key=os.getenv('PINECONE_API_KEY')
+                        pinecone_api_key=get_api_key('PINECONE_API_KEY')
                     )
                     
                     st.success(f"✅ Successfully processed {len(documents)} documents into {len(chunks)} chunks!")
@@ -247,7 +266,8 @@ def main():
                 )
         else:
             st.warning("⚠️ Please initialize the system first")
-            st.info("💡 Make sure you have set up your .env file with OPENAI_API_KEY and PINECONE_API_KEY")
+            st.info("💡 **For Streamlit Cloud**: Add your API keys to the app secrets in the Streamlit dashboard")
+            st.info("💡 **For local development**: Create a .env file with OPENAI_API_KEY and PINECONE_API_KEY")
     
     # Main content area
     if st.session_state.system_initialized:
