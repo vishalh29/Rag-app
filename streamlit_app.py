@@ -261,7 +261,7 @@ def main():
                     "Number of source documents to retrieve",
                     min_value=1,
                     max_value=10,
-                    value=3,
+                    value=2,
                     help="More documents provide more context but may be slower"
                 )
         else:
