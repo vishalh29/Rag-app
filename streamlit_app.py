@@ -241,7 +241,7 @@ def main():
                 st.session_state.system_initialized = st.session_state.rag_system.initialize_components()
         
         if st.session_state.system_initialized:
-            st.success("✅ System initialized successfully!")
+            st.success("System initialized")
             
             st.header("📄 Document Upload")
             uploaded_files = st.file_uploader(
