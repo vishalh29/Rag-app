@@ -129,7 +129,7 @@ class RAGSystem:
             st.error(f"❌ Error processing documents: {str(e)}")
             return False
     
-    def query_documents(self, query, k=3):
+    def query_documents(self, query, k=2):
         """Query the vector store for relevant documents"""
         try:
             if not self.vector_store:
