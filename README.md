@@ -1,4 +1,4 @@
-# RAG Document Q&A System
+# RAG Application
 
 A powerful Retrieval-Augmented Generation (RAG) system built with Streamlit, LangChain, OpenAI, and Pinecone for document-based question answering.
 
